@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rl-trainer-ds"
+version = "0.1.0"
+description = "Nintendo DS-styled RL trainer Dash app"
+requires-python = ">=3.10"
+dependencies = [
+    "dash>=2.16",
+    "plotly>=5.18",
+    "gymnasium>=0.29",
+    "stable-baselines3>=2.2",
+    "numpy>=1.24",
+    "tensorboard>=2.14",
+]
+
+[project.optional-dependencies]
+wandb = ["wandb"]
+
+[project.scripts]
+rl-trainer-ds = "rl_trainer_ds.app:run"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rl_trainer_ds*"]

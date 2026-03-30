@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: rl-trainer-ds
+Version: 0.1.0
+Summary: Nintendo DS-styled RL trainer Dash app
+Requires-Python: >=3.10
+Requires-Dist: dash>=2.16
+Requires-Dist: plotly>=5.18
+Requires-Dist: gymnasium>=0.29
+Requires-Dist: stable-baselines3>=2.2
+Requires-Dist: numpy>=1.24

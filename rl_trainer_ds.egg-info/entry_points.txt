@@ -1,0 +1,2 @@
+[console_scripts]
+rl-trainer-ds = rl_trainer_ds.app:run

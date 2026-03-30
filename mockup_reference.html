@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RL Trainer DS — Mockup Reference</title>
+<style>
+  body { background: #1a1a22; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 2rem 0; }
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+
+  .ds-wrapper { display: flex; justify-content: center; align-items: flex-start; font-family: 'Share Tech Mono', monospace; }
+  .ds-body { width: 420px; background: #2a2a35; border-radius: 18px 18px 40px 40px; position: relative; box-shadow: inset 0 2px 0 #4a4a5a, inset 0 -2px 0 #111118; border: 2px solid #1a1a22; }
+  .ds-top-half { background: #2a2a35; border-radius: 16px 16px 0 0; padding: 18px 24px 0; border-bottom: 3px solid #111118; position: relative; }
+  .ds-hinge { height: 14px; background: #1a1a22; display: flex; align-items: center; justify-content: center; gap: 120px; }
+  .ds-hinge-dot { width: 20px; height: 8px; background: #111118; border-radius: 4px; border: 1px solid #333340; }
+  .ds-bottom-half { background: #2e2e3a; border-radius: 0 0 36px 36px; padding: 10px 24px 20px; }
+  .screen-bezel { background: #111118; border-radius: 6px; padding: 6px; margin-bottom: 12px; }
+  .screen { background: #0a0f1a; border-radius: 3px; overflow: hidden; position: relative; }
+  .top-screen { height: 180px; }
+  .bottom-screen { height: 160px; }
+  .screen-header { background: #0d1520; padding: 5px 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1a2535; }
+  .screen-title { font-family: 'Press Start 2P', monospace; font-size: 7px; color: #4a9eff; letter-spacing: 1px; }
+  .screen-status { font-size: 8px; color: #2a6a2a; font-family: 'Share Tech Mono', monospace; }
+  .algo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px; }
+  .algo-card { background: #0d1520; border: 1px solid #1a2535; border-radius: 3px; padding: 5px 3px; text-align: center; cursor: pointer; transition: background 0.1s; }
+  .algo-card.selected { background: #0a2a4a; border-color: #4a9eff; }
+  .algo-name { font-family: 'Press Start 2P', monospace; font-size: 6px; color: #4a9eff; display: block; margin-bottom: 3px; }
+  .algo-type { font-size: 7px; color: #445566; }
+  .chart-area { padding: 6px 10px 4px; height: 100px; position: relative; }
+  .chart-label { font-size: 7px; color: #334455; margin-bottom: 2px; }
+  .chart-canvas { width: 100%; height: 80px; }
+  .bottom-content { padding: 6px 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; height: 130px; }
+  .config-panel { background: #0d1520; border: 1px solid #1a2535; border-radius: 3px; padding: 6px; overflow: hidden; }
+  .config-panel-title { font-family: 'Press Start 2P', monospace; font-size: 5px; color: #ff9a3c; margin-bottom: 5px; letter-spacing: 0.5px; }
+  .config-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .config-label { font-size: 7px; color: #445566; }
+  .config-value { font-size: 7px; color: #aaccee; background: #0a0f1a; padding: 1px 4px; border-radius: 2px; border: 1px solid #1a2535; }
+  .arch-options { display: flex; gap: 3px; margin-bottom: 5px; }
+  .arch-btn { font-size: 6px; color: #445566; background: #0a0f1a; border: 1px solid #1a2535; border-radius: 2px; padding: 2px 4px; cursor: pointer; font-family: 'Share Tech Mono', monospace; }
+  .arch-btn.active { color: #ff9a3c; border-color: #ff9a3c; background: #1a0f00; }
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .toggle-label { font-size: 7px; color: #445566; }
+  .toggle { width: 18px; height: 9px; background: #0a0f1a; border-radius: 5px; border: 1px solid #1a2535; position: relative; cursor: pointer; }
+  .toggle.on { background: #0a2a0a; border-color: #2a6a2a; }
+  .toggle-dot { width: 7px; height: 7px; background: #334455; border-radius: 50%; position: absolute; top: 0px; left: 0px; transition: left 0.15s; }
+  .toggle.on .toggle-dot { background: #4aaa4a; left: 9px; }
+  .ds-controls { display: flex; justify-content: space-between; align-items: center; padding: 4px 0 8px; }
+  .dpad { width: 52px; height: 52px; position: relative; }
+  .dpad-h { position: absolute; top: 17px; left: 0; width: 52px; height: 18px; background: #1a1a25; border-radius: 3px; border: 1px solid #111118; }
+  .dpad-v { position: absolute; top: 0; left: 17px; width: 18px; height: 52px; background: #1a1a25; border-radius: 3px; border: 1px solid #111118; }
+  .dpad-center { position: absolute; top: 17px; left: 17px; width: 18px; height: 18px; background: #222230; z-index: 1; }
+  .face-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: 52px; }
+  .face-btn { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Press Start 2P', monospace; font-size: 6px; cursor: pointer; border: 1px solid transparent; }
+  .btn-a { background: #5a1a1a; color: #ff6666; border-color: #3a0a0a; }
+  .btn-b { background: #1a3a1a; color: #66ff66; border-color: #0a2a0a; }
+  .btn-x { background: #1a1a5a; color: #6666ff; border-color: #0a0a3a; }
+  .btn-y { background: #3a2a0a; color: #ffcc44; border-color: #2a1a00; }
+  .center-buttons { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .start-select { display: flex; gap: 8px; }
+  .mini-btn { background: #1a1a25; border: 1px solid #111118; border-radius: 8px; padding: 2px 8px; font-family: 'Press Start 2P', monospace; font-size: 5px; color: #334455; cursor: pointer; }
+  .train-btn { background: #0a2a0a; border: 1px solid #2a6a2a; border-radius: 8px; padding: 3px 12px; font-family: 'Press Start 2P', monospace; font-size: 6px; color: #4aaa4a; cursor: pointer; letter-spacing: 1px; }
+  .train-btn:hover { background: #0d3a0d; }
+  .cartridge-area { display: flex; justify-content: center; padding: 0 0 10px; }
+  .cartridge-slot { width: 80px; height: 22px; background: #111118; border-radius: 3px 3px 8px 8px; border: 1px solid #1a1a22; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .cartridge-slot:hover { border-color: #4a9eff; }
+  .cartridge-inserted { width: 70px; height: 16px; background: #1a2a1a; border-radius: 2px 2px 6px 6px; border: 1px solid #2a5a2a; display: flex; align-items: center; justify-content: center; }
+  .cartridge-label { font-family: 'Press Start 2P', monospace; font-size: 5px; color: #4aaa4a; letter-spacing: 0.5px; }
+  .speaker-dots { display: grid; grid-template-columns: repeat(4, 4px); gap: 3px; padding: 4px; }
+  .speaker-dot { width: 4px; height: 4px; background: #1a1a22; border-radius: 50%; }
+  .speakers { display: flex; justify-content: space-between; padding: 0 8px; }
+  .power-led { width: 6px; height: 6px; background: #2a8a2a; border-radius: 50%; position: absolute; top: 12px; right: 14px; }
+  .wifi-led { width: 6px; height: 6px; background: #2a4a8a; border-radius: 50%; position: absolute; top: 12px; right: 26px; }
+  .shoulder-btn { position: absolute; top: -8px; width: 50px; height: 10px; background: #222230; border-radius: 4px 4px 0 0; border: 1px solid #1a1a22; font-family: 'Press Start 2P', monospace; font-size: 5px; color: #334455; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .shoulder-l { left: 8px; }
+  .shoulder-r { right: 8px; }
+  .reward-path { fill: none; stroke: #4a9eff; stroke-width: 1.5; }
+  .reward-grid { stroke: #1a2535; stroke-width: 0.5; }
+</style>
+</head>
+<body>
+<div class="ds-wrapper">
+  <div style="position: relative;">
+    <div class="ds-body">
+      <div class="ds-top-half">
+        <div class="shoulder-btn shoulder-l">L</div>
+        <div class="shoulder-btn shoulder-r">R</div>
+        <div class="power-led"></div>
+        <div class="wifi-led"></div>
+        <div style="display: flex; justify-content: space-between; padding: 2px 0 8px;">
+          <div class="speaker-dots">
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+          </div>
+          <div class="speaker-dots">
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+          </div>
+        </div>
+        <div class="screen-bezel">
+          <div class="screen top-screen">
+            <div class="screen-header">
+              <span class="screen-title">ALGO SELECT</span>
+              <span class="screen-status" id="env-display">▶ CartPole-v1</span>
+            </div>
+            <div class="algo-grid">
+              <div class="algo-card selected" onclick="selectAlgo(this)">
+                <span class="algo-name">PPO</span><span class="algo-type">on-policy</span>
+              </div>
+              <div class="algo-card" onclick="selectAlgo(this)">
+                <span class="algo-name">SAC</span><span class="algo-type">off-pol</span>
+              </div>
+              <div class="algo-card" onclick="selectAlgo(this)">
+                <span class="algo-name">A2C</span><span class="algo-type">on-policy</span>
+              </div>
+              <div class="algo-card" onclick="selectAlgo(this)">
+                <span class="algo-name">DQN</span><span class="algo-type">off-pol</span>
+              </div>
+              <div class="algo-card" onclick="selectAlgo(this)">
+                <span class="algo-name">TD3</span><span class="algo-type">off-pol</span>
+              </div>
+            </div>
+            <div class="chart-area">
+              <div class="chart-label">EPISODE REWARD — last 100 ep</div>
+              <svg class="chart-canvas" viewBox="0 0 360 70" preserveAspectRatio="none">
+                <line x1="0" y1="14" x2="360" y2="14" class="reward-grid"/>
+                <line x1="0" y1="35" x2="360" y2="35" class="reward-grid"/>
+                <line x1="0" y1="56" x2="360" y2="56" class="reward-grid"/>
+                <path class="reward-path" id="reward-curve" d="M0,60 C20,58 35,52 55,45 C75,38 90,40 110,32 C130,24 145,28 165,18 C185,10 200,14 220,10 C240,6 260,8 280,5 C300,3 320,4 360,3"/>
+                <text x="354" y="10" fill="#4a9eff" font-size="7" text-anchor="end" font-family="Share Tech Mono">487</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ds-hinge">
+        <div class="ds-hinge-dot"></div>
+        <div class="ds-hinge-dot"></div>
+      </div>
+
+      <div class="ds-bottom-half">
+        <div class="screen-bezel" style="margin-top: 8px;">
+          <div class="screen bottom-screen">
+            <div class="screen-header">
+              <span class="screen-title" style="color: #ff9a3c;">AGENT CONFIG</span>
+              <span class="screen-status" id="train-status">● READY</span>
+            </div>
+            <div class="bottom-content">
+              <div class="config-panel">
+                <div class="config-panel-title">ARCHITECTURE</div>
+                <div class="arch-options">
+                  <div class="arch-btn active">MLP</div>
+                  <div class="arch-btn">CNN</div>
+                  <div class="arch-btn">LSTM</div>
+                </div>
+                <div class="config-row">
+                  <span class="config-label">lr</span>
+                  <span class="config-value">3e-4</span>
+                </div>
+                <div class="config-row">
+                  <span class="config-label">γ</span>
+                  <span class="config-value">0.99</span>
+                </div>
+                <div class="config-row">
+                  <span class="config-label">batch</span>
+                  <span class="config-value">64</span>
+                </div>
+                <div class="config-row">
+                  <span class="config-label">steps</span>
+                  <span class="config-value">100k</span>
+                </div>
+              </div>
+              <div class="config-panel">
+                <div class="config-panel-title">SHAPING</div>
+                <div class="toggle-row">
+                  <span class="toggle-label">obs norm</span>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">frame stack</span>
+                  <div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">act clip</span>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">rew clip</span>
+                  <div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">rew scale</span>
+                  <div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-dot"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-controls">
+          <div class="dpad">
+            <div class="dpad-h"></div>
+            <div class="dpad-v"></div>
+            <div class="dpad-center"></div>
+          </div>
+          <div class="center-buttons">
+            <div class="start-select">
+              <div class="mini-btn">SELECT</div>
+              <div class="mini-btn">START</div>
+            </div>
+            <div class="train-btn" onclick="startTrain()">▶ TRAIN</div>
+          </div>
+          <div class="face-buttons">
+            <div style="width:20px"></div>
+            <div class="face-btn btn-x">X</div>
+            <div class="face-btn btn-y">Y</div>
+            <div class="face-btn btn-a">A</div>
+            <div class="face-btn btn-b">B</div>
+            <div style="width:20px"></div>
+          </div>
+        </div>
+
+        <div class="cartridge-area">
+          <div class="cartridge-slot" onclick="cycleEnv()" title="Click to change environment">
+            <div class="cartridge-inserted">
+              <span class="cartridge-label" id="cart-label">CARTPOLE-V1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const envs = ['CARTPOLE-V1', 'LUNARLANDER-V2', 'MOUNTAINCAR-V0', 'HALFCHEETAH-V4', 'ANT-V4'];
+  const envDisplay = ['CartPole-v1', 'LunarLander-v2', 'MountainCar-v0', 'HalfCheetah-v4', 'Ant-v4'];
+  let envIdx = 0;
+  function cycleEnv() {
+    envIdx = (envIdx + 1) % envs.length;
+    document.getElementById('cart-label').textContent = envs[envIdx];
+    document.getElementById('env-display').textContent = '▶ ' + envDisplay[envIdx];
+  }
+  function selectAlgo(el) {
+    document.querySelectorAll('.algo-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  let training = false;
+  let trainInterval = null;
+  let rewards = [60];
+  function startTrain() {
+    if (training) {
+      training = false;
+      clearInterval(trainInterval);
+      document.querySelector('.train-btn').textContent = '▶ TRAIN';
+      document.getElementById('train-status').textContent = '● READY';
+      document.getElementById('train-status').style.color = '#2a6a2a';
+      rewards = [60];
+      return;
+    }
+    training = true;
+    document.querySelector('.train-btn').textContent = '■ STOP';
+    document.getElementById('train-status').textContent = '◉ TRAINING';
+    document.getElementById('train-status').style.color = '#aa4a4a';
+    trainInterval = setInterval(() => {
+      if (!training) return;
+      const last = rewards[rewards.length - 1];
+      const next = Math.min(500, last + (Math.random() * 18 - 4));
+      rewards.push(next);
+      if (rewards.length > 30) rewards.shift();
+      const w = 360, h = 70, pad = 5;
+      const minR = Math.min(...rewards) - 10;
+      const maxR = Math.max(...rewards) + 10;
+      const pts = rewards.map((r, i) => {
+        const x = pad + (i / (rewards.length - 1)) * (w - 2 * pad);
+        const y = h - pad - ((r - minR) / (maxR - minR)) * (h - 2 * pad);
+        return [x, y];
+      });
+      let d = `M${pts[0][0]},${pts[0][1]}`;
+      for (let i = 1; i < pts.length; i++) {
+        const cx = (pts[i-1][0] + pts[i][0]) / 2;
+        d += ` C${cx},${pts[i-1][1]} ${cx},${pts[i][1]} ${pts[i][0]},${pts[i][1]}`;
+      }
+      document.getElementById('reward-curve').setAttribute('d', d);
+      document.querySelector('.chart-canvas text').textContent = Math.round(rewards[rewards.length-1]);
+    }, 400);
+  }
+</script>
+</body>
+</html>
