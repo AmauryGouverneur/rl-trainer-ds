@@ -88,10 +88,10 @@ def _is_port_open(port: int) -> bool:
         return s.connect_ex(("localhost", port)) == 0
 
 
-def _ensure_tensorboard():
+def ensure_tensorboard_running():
     global _tb_proc
-    if _is_port_open(6006):
-        return  # already running
+    if _tb_proc is not None and _tb_proc.poll() is None:
+        return  # process is alive
     try:
         _tb_proc = subprocess.Popen(
             ["tensorboard", "--logdir", "./tb_logs", "--port", "6006"],
@@ -122,7 +122,7 @@ def start_training(env_id: str, algo_name: str, algo_params: dict,
     _state.running = True
     _state.tb_log_dir = "./tb_logs"
 
-    _ensure_tensorboard()
+    ensure_tensorboard_running()
 
     def _run():
         try:
