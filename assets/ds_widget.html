@@ -1,0 +1,690 @@
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+
+@keyframes ds_led_pulse {
+  0%, 100% { background: #33cc33; box-shadow: 0 0 3px #33cc33; }
+  50%       { background: #66ff66; box-shadow: 0 0 8px #66ff66; }
+}
+
+.ds-embed * { box-sizing: border-box; }
+.ds-embed { font-family: 'Share Tech Mono', monospace; }
+
+.ds-embed .ds-wrapper {
+  display: flex; justify-content: center; align-items: flex-start;
+  font-family: 'Share Tech Mono', monospace;
+}
+.ds-embed .ds-body {
+  width: 560px; background: #252533;
+  border-radius: 20px 20px 48px 48px; position: relative;
+  box-shadow: inset 0 2px 0 #3e3e52, inset 0 -2px 0 #0d0d14;
+  border: 2px solid #14141e;
+}
+.ds-embed .ds-top-half {
+  background: #252533; border-radius: 18px 18px 0 0;
+  padding: 14px 28px 0; border-bottom: 3px solid #0d0d14; position: relative;
+}
+.ds-embed .shoulder-btn {
+  position: absolute; top: -8px; width: 50px; height: 10px;
+  background: #1e1e2e; border-radius: 4px 4px 0 0; border: 1.5px solid #3a3a52;
+  font-family: 'Press Start 2P', monospace; font-size: 5px; color: #aaaacc;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.ds-embed .shoulder-btn:hover { color: #ddddff; border-color: #6666aa; }
+.ds-embed .shoulder-l { left: 8px; }
+.ds-embed .shoulder-r { right: 8px; }
+.ds-embed .shoulder-mini {
+  position: absolute; top: -8px; width: 28px; height: 10px;
+  background: #1e1e2e; border-radius: 4px 4px 0 0; border: 1px solid #3a3a52;
+  font-family: 'Press Start 2P', monospace; font-size: 5px; color: #aaaacc;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; outline: none; transition: color 0.15s, border-color 0.15s;
+}
+.ds-embed .shoulder-mini:hover  { color: #60b8ff; border-color: #2244aa; }
+.ds-embed .shoulder-mini.active { color: #60b8ff; border-color: #2244aa; }
+.ds-embed .shoulder-mini.dimmed { opacity: 0.4; cursor: not-allowed; }
+.ds-embed .shoulder-wb { right: 100px; }
+.ds-embed .power-led {
+  width: 6px; height: 6px; background: #33cc33; border-radius: 50%;
+  position: absolute; top: 12px; right: 14px;
+}
+.ds-embed .power-led.training { animation: ds_led_pulse 1s ease-in-out infinite; }
+.ds-embed .wifi-led {
+  width: 6px; height: 6px; background: #3366cc; border-radius: 50%;
+  position: absolute; top: 12px; right: 26px;
+}
+.ds-embed .speaker-row { display: flex; justify-content: space-between; padding: 2px 0 8px; }
+.ds-embed .speaker-dots {
+  display: grid; grid-template-columns: repeat(4, 4px); gap: 3px; padding: 4px;
+}
+.ds-embed .speaker-dot { width: 4px; height: 4px; background: #161622; border-radius: 50%; }
+.ds-embed .screen-bezel {
+  background: #0d0d14; border-radius: 6px; padding: 6px; margin-bottom: 12px;
+}
+.ds-embed .screen { background: #070c18; border-radius: 3px; overflow: hidden; position: relative; }
+.ds-embed .top-screen { height: 220px; }
+.ds-embed .bottom-screen { height: 200px; overflow-y: auto; }
+.ds-embed .bottom-screen::-webkit-scrollbar { width: 3px; }
+.ds-embed .bottom-screen::-webkit-scrollbar-track { background: #070c18; }
+.ds-embed .bottom-screen::-webkit-scrollbar-thumb { background: #2a4a7a; border-radius: 2px; }
+.ds-embed .screen-header {
+  background: #0b1220; padding: 5px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #1e3050;
+}
+.ds-embed .screen-title {
+  font-family: 'Press Start 2P', monospace; font-size: 7px; color: #60b8ff; letter-spacing: 1px;
+}
+.ds-embed .screen-title-orange { color: #ffaa44; }
+.ds-embed .screen-status { font-size: 8px; color: #5dcc5d; font-family: 'Share Tech Mono', monospace; }
+.ds-embed .screen-status.training { color: #ee6655; }
+.ds-embed .algo-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px;
+}
+.ds-embed .algo-card {
+  background: #0e1a2e; border: 1px solid #1e3050; border-radius: 3px;
+  padding: 5px 3px; text-align: center; cursor: pointer; transition: background 0.1s;
+}
+.ds-embed .algo-card.selected { background: #0a2d5a; border-color: #60b8ff; }
+.ds-embed .algo-name {
+  font-family: 'Press Start 2P', monospace; font-size: 6px; color: #60b8ff;
+  display: block; margin-bottom: 3px;
+}
+.ds-embed .algo-type { font-size: 7px; color: #6688aa; }
+.ds-embed .algo-card-custom {
+  background: #1a0a2a; border: 1px solid #4a2a6a; border-radius: 3px;
+  padding: 5px 3px; text-align: center; cursor: pointer; transition: background 0.1s;
+}
+.ds-embed .algo-card-custom.selected { background: #2a0a4a; border-color: #aa66ff; }
+.ds-embed .algo-card-custom.dimmed { opacity: 0.4; cursor: not-allowed; }
+.ds-embed .algo-name-custom {
+  font-family: 'Press Start 2P', monospace; font-size: 6px; color: #bb88ff;
+  display: block; margin-bottom: 3px;
+}
+.ds-embed .algo-type-custom { font-size: 7px; color: #7a5a9a; }
+.ds-embed .chart-area { padding: 4px 10px 4px; height: 128px; position: relative; }
+.ds-embed .chart-label {
+  font-size: 7px; color: #5588aa; margin-bottom: 2px; font-family: 'Share Tech Mono', monospace;
+}
+.ds-embed canvas { display: block; }
+.ds-embed .ds-hinge {
+  height: 14px; background: #14141e; display: flex;
+  align-items: center; justify-content: center; gap: 170px;
+}
+.ds-embed .ds-hinge-dot {
+  width: 20px; height: 8px; background: #0d0d14; border-radius: 4px; border: 1px solid #2a2a3a;
+}
+.ds-embed .ds-bottom-half {
+  background: #2a2a38; border-radius: 0 0 44px 44px; padding: 8px 28px 18px;
+}
+.ds-embed .bottom-content {
+  padding: 6px 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; min-height: 100px;
+}
+.ds-embed .config-panel {
+  background: #0e1a2e; border: 1px solid #1e3050; border-radius: 3px; padding: 6px; overflow: visible;
+}
+.ds-embed .config-panel-title {
+  font-family: 'Press Start 2P', monospace; font-size: 5px; color: #ffaa44;
+  margin-bottom: 5px; letter-spacing: 0.5px;
+}
+.ds-embed .config-row {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px;
+}
+.ds-embed .config-label { font-size: 7px; color: #88aacc; }
+.ds-embed .config-value {
+  font-size: 7px; color: #c8e0ff; background: #070c18;
+  padding: 1px 4px; border-radius: 2px; border: 1px solid #1e3050;
+}
+.ds-embed .arch-options { display: flex; gap: 3px; margin-bottom: 5px; }
+.ds-embed .arch-btn {
+  font-size: 6px; color: #88aacc; background: #070c18; border: 1px solid #1e3050;
+  border-radius: 2px; padding: 2px 4px; cursor: pointer; font-family: 'Share Tech Mono', monospace;
+}
+.ds-embed .arch-btn.active { color: #ffaa44; border-color: #cc7722; background: #1e1000; }
+.ds-embed .toggle-row {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;
+}
+.ds-embed .toggle-label { font-size: 7px; color: #88aacc; }
+.ds-embed .toggle {
+  width: 18px; height: 9px; background: #070c18; border-radius: 5px;
+  border: 1px solid #2a4060; position: relative; cursor: pointer;
+  display: inline-block; flex-shrink: 0;
+}
+.ds-embed .toggle.on { background: #0a2a0a; border-color: #3a8a3a; }
+.ds-embed .toggle-dot {
+  width: 7px; height: 7px; background: #3a5070; border-radius: 50%;
+  position: absolute; top: 0; left: 0; transition: left 0.15s;
+}
+.ds-embed .toggle.on .toggle-dot { background: #55cc55; left: 9px; }
+.ds-embed .ds-controls {
+  display: flex; justify-content: space-between; align-items: center; padding: 4px 0 6px;
+}
+.ds-embed .dpad { width: 44px; height: 44px; position: relative; }
+.ds-embed .dpad-h {
+  position: absolute; top: 14px; left: 0; width: 44px; height: 16px;
+  background: #161622; border-radius: 3px; border: 1px solid #0d0d14;
+}
+.ds-embed .dpad-v {
+  position: absolute; top: 0; left: 14px; width: 16px; height: 44px;
+  background: #161622; border-radius: 3px; border: 1px solid #0d0d14;
+}
+.ds-embed .dpad-center {
+  position: absolute; top: 14px; left: 14px; width: 16px; height: 16px;
+  background: #1e1e2e; z-index: 1;
+}
+.ds-embed .face-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; width: 44px; }
+.ds-embed .face-btn {
+  width: 18px; height: 18px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center;
+  font-family: 'Press Start 2P', monospace; font-size: 5px; cursor: pointer;
+  border: 1px solid transparent;
+}
+.ds-embed .btn-a  { background: #4a1010; color: #ff8888; border-color: #882222; }
+.ds-embed .btn-b  { background: #0f3a0f; color: #88ee88; border-color: #226622; }
+.ds-embed .btn-tb { background: #0a1a4a; color: #88bbff; border-color: #2244aa; font-size: 5px; transition: opacity 0.2s; }
+.ds-embed .btn-tb:hover:not(.dimmed) { background: #0e2060; }
+.ds-embed .btn-y  { background: #3a2800; color: #ffcc55; border-color: #886600; }
+.ds-embed .face-btn.dimmed { opacity: 0.35; cursor: not-allowed; }
+.ds-embed .center-buttons { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ds-embed .start-select { display: flex; gap: 8px; }
+.ds-embed .mini-btn {
+  background: #1e1e2e; border: 1.5px solid #3a3a52; border-radius: 8px; padding: 2px 8px;
+  font-family: 'Press Start 2P', monospace; font-size: 5px; color: #9999bb; cursor: pointer;
+}
+.ds-embed .mini-btn:hover { border-color: #6666aa; color: #ccccee; }
+.ds-embed .train-btn {
+  background: #0a2a0a; border: 1px solid #3a8a3a; border-radius: 8px; padding: 3px 12px;
+  font-family: 'Press Start 2P', monospace; font-size: 6px; color: #66ee66;
+  cursor: pointer; letter-spacing: 1px; outline: none;
+}
+.ds-embed .train-btn:hover:not(:disabled) { background: #0d3a0d; }
+.ds-embed .train-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ds-embed .cartridge-area { display: flex; justify-content: center; gap: 8px; padding: 0 0 8px; }
+.ds-embed .cartridge-slot {
+  width: 70px; height: 18px; background: #0d0d14; border-radius: 3px 3px 7px 7px;
+  border: 1px solid #1e1e2e; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.ds-embed .cartridge-slot:hover { border-color: #60b8ff; }
+.ds-embed .cartridge-slot-custom { border-color: #4a2a6a; }
+.ds-embed .cartridge-slot-custom:hover { border-color: #aa66ff; }
+.ds-embed .cartridge-inserted {
+  width: 60px; height: 13px; background: #0f2a0f; border-radius: 2px 2px 5px 5px;
+  border: 1px solid #2a6a2a; display: flex; align-items: center; justify-content: center;
+}
+.ds-embed .cartridge-inserted-custom {
+  width: 60px; height: 13px; background: #1a0a2a; border-radius: 2px 2px 5px 5px;
+  border: 1px solid #4a2a6a; display: flex; align-items: center; justify-content: center;
+}
+.ds-embed .cartridge-label {
+  font-family: 'Press Start 2P', monospace; font-size: 5px; color: #66ee66;
+  letter-spacing: 0.5px; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; max-width: 64px;
+}
+.ds-embed .cartridge-label-custom { color: #bb88ff; }
+.ds-embed .log-pre {
+  font-family: 'Share Tech Mono', monospace; font-size: 7px; color: #60b8ff;
+  background: #070c18; margin: 0; padding: 4px 8px; overflow: hidden; line-height: 1.4;
+  white-space: pre-wrap;
+}
+.ds-embed .env-display-loaded { color: #5dcc5d; }
+</style>
+
+<div class="ds-embed" style="display:flex; justify-content:center; margin: 2rem 0;">
+  <div class="ds-wrapper">
+    <div class="ds-body">
+
+      <!-- TOP HALF -->
+      <div class="ds-top-half">
+        <div class="shoulder-btn shoulder-l">L</div>
+        <div class="shoulder-btn shoulder-r">R</div>
+        <button class="shoulder-mini shoulder-wb dimmed" id="ds_wb_btn" title="Start training first">WB</button>
+        <div class="power-led" id="ds_power_led"></div>
+        <div class="wifi-led"></div>
+
+        <!-- Speakers -->
+        <div class="speaker-row">
+          <div class="speaker-dots">
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+          </div>
+          <div class="speaker-dots">
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+            <div class="speaker-dot"></div><div class="speaker-dot"></div>
+          </div>
+        </div>
+
+        <!-- Top screen -->
+        <div class="screen-bezel">
+          <div class="screen top-screen">
+            <div class="screen-header">
+              <span class="screen-title">ALGO SELECT</span>
+              <span class="screen-status" id="ds_env_display"> no cartridge</span>
+            </div>
+            <!-- Algo grid -->
+            <div class="algo-grid" id="ds_algo_grid">
+              <div class="algo-card selected" data-algo="PPO">
+                <span class="algo-name">PPO</span><span class="algo-type">on-policy</span>
+              </div>
+              <div class="algo-card" data-algo="SAC">
+                <span class="algo-name">SAC</span><span class="algo-type">off-pol</span>
+              </div>
+              <div class="algo-card" data-algo="A2C">
+                <span class="algo-name">A2C</span><span class="algo-type">on-policy</span>
+              </div>
+              <div class="algo-card" data-algo="DQN">
+                <span class="algo-name">DQN</span><span class="algo-type">off-pol</span>
+              </div>
+              <div class="algo-card-custom dimmed" data-algo="CUSTOM">
+                <span class="algo-name-custom">+CUST</span><span class="algo-type-custom">user algo</span>
+              </div>
+            </div>
+            <!-- Chart -->
+            <div class="chart-area">
+              <div class="chart-label">EPISODE REWARD</div>
+              <canvas id="ds_chart" style="width:100%; height:108px;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HINGE -->
+      <div class="ds-hinge">
+        <div class="ds-hinge-dot"></div>
+        <div class="ds-hinge-dot"></div>
+      </div>
+
+      <!-- BOTTOM HALF -->
+      <div class="ds-bottom-half">
+        <div class="screen-bezel" style="margin-top:8px;">
+          <div class="screen bottom-screen">
+            <div class="screen-header">
+              <span class="screen-title screen-title-orange">AGENT CONFIG</span>
+              <span class="screen-status" id="ds_train_status"> READY</span>
+            </div>
+            <div class="bottom-content">
+              <!-- Left: arch + params -->
+              <div class="config-panel">
+                <div class="config-panel-title">ARCHITECTURE</div>
+                <div class="arch-options" id="ds_arch_options">
+                  <div class="arch-btn active" data-arch="MLP">MLP</div>
+                  <div class="arch-btn" data-arch="CNN">CNN</div>
+                  <div class="arch-btn" data-arch="LSTM">LSTM</div>
+                </div>
+                <div id="ds_param_rows"></div>
+              </div>
+              <!-- Right: shaping toggles -->
+              <div class="config-panel">
+                <div class="config-panel-title">SHAPING</div>
+                <div class="toggle-row">
+                  <span class="toggle-label">obs norm</span>
+                  <div class="toggle on" data-key="obs_norm"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">frame stack</span>
+                  <div class="toggle" data-key="frame_stack"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">act clip</span>
+                  <div class="toggle on" data-key="act_clip"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">rew clip</span>
+                  <div class="toggle" data-key="rew_clip"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="toggle-row">
+                  <span class="toggle-label">rew scale</span>
+                  <div class="toggle" data-key="rew_scale"><div class="toggle-dot"></div></div>
+                </div>
+                <div class="config-panel-title" style="margin-top:6px;">LOGGING</div>
+                <div class="toggle-row">
+                  <span class="toggle-label">wandb</span>
+                  <div class="toggle" data-key="wandb"><div class="toggle-dot"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="ds-controls">
+          <div class="dpad">
+            <div class="dpad-h"></div>
+            <div class="dpad-v"></div>
+            <div class="dpad-center"></div>
+          </div>
+          <div class="center-buttons">
+            <div class="start-select">
+              <div class="mini-btn">SELECT</div>
+              <div class="mini-btn">START</div>
+            </div>
+            <button class="train-btn" id="ds_train_btn" disabled> TRAIN</button>
+          </div>
+          <div class="face-buttons">
+            <div style="width:20px;"></div>
+            <div class="face-btn btn-tb dimmed" id="ds_tb_btn">TB</div>
+            <div class="face-btn btn-y">Y</div>
+            <div class="face-btn btn-a">A</div>
+            <div class="face-btn btn-b">B</div>
+            <div style="width:20px;"></div>
+          </div>
+        </div>
+
+        <!-- Cartridge slots -->
+        <div class="cartridge-area">
+          <div class="cartridge-slot" id="ds_cart_slot" title="Click to load environment">
+            <div class="cartridge-inserted">
+              <span class="cartridge-label" id="ds_cart_label">NO CART</span>
+            </div>
+          </div>
+          <div class="cartridge-slot cartridge-slot-custom" id="ds_custom_cart_slot" title="Load custom .py environment">
+            <div class="cartridge-inserted cartridge-inserted-custom">
+              <span class="cartridge-label cartridge-label-custom">CUSTOM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log -->
+        <pre class="log-pre" id="ds_log"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Env picker modal -->
+  <div id="ds_env_modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; z-index:9999;">
+    <div style="background:#252533; border:2px solid #60b8ff; border-radius:6px; padding:20px; width:320px; font-family:'Share Tech Mono',monospace;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#60b8ff;">SELECT ENV</div>
+        <button id="ds_modal_close" style="background:none;border:none;color:#6a2a2a;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;">×</button>
+      </div>
+      <div id="ds_env_list" style="border:1px solid #1e3050; border-radius:3px; margin-bottom:10px; max-height:220px; overflow-y:auto; background:#070c18;"></div>
+      <input id="ds_env_input" type="text" placeholder="CartPole-v1"
+        style="width:100%;background:#070c18;border:1px solid #1e3050;color:#c8e0ff;font-family:'Share Tech Mono',monospace;font-size:12px;padding:6px 8px;border-radius:3px;margin-bottom:6px;outline:none;"/>
+      <div id="ds_env_error" style="font-family:'Press Start 2P',monospace;font-size:6px;color:#ff4444;min-height:14px;margin-bottom:6px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="ds_modal_cancel" style="font-family:'Press Start 2P',monospace;font-size:6px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid #6a2a2a;background:#2a1a1a;color:#aa4444;">CANCEL</button>
+        <button id="ds_modal_confirm" style="font-family:'Press Start 2P',monospace;font-size:6px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid #3a8a3a;background:#0a2a0a;color:#66ee66;">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ── State ────────────────────────────────────────────────────────
+  var ds_state = {
+    algo: 'PPO',
+    arch: 'MLP',
+    env: '',
+    training: false,
+    rewards: [],
+    timestep: 0,
+    interval: null,
+  };
+
+  var ds_algo_defaults = {
+    PPO: { learning_rate: '3e-4', n_steps: '2048', batch_size: '64', n_epochs: '10', gamma: '0.99' },
+    SAC: { learning_rate: '3e-4', buffer_size: '1000000', batch_size: '256', gamma: '0.99', tau: '0.005' },
+    A2C: { learning_rate: '7e-4', n_steps: '5', gamma: '0.99' },
+    DQN: { learning_rate: '1e-4', buffer_size: '1000000', batch_size: '32', gamma: '0.99' },
+  };
+
+  var ds_envs = {
+    'CLASSIC CONTROL': ['CartPole-v1', 'MountainCar-v0', 'Pendulum-v1', 'Acrobot-v1'],
+    'BOX2D': ['LunarLander-v2', 'BipedalWalker-v3'],
+    'MUJOCO': ['HalfCheetah-v4', 'Ant-v4', 'Hopper-v4', 'Humanoid-v4'],
+    'ATARI': ['ALE/Pong-v5', 'ALE/Breakout-v5'],
+  };
+
+  // ── Algo card selection ──────────────────────────────────────────
+  function ds_select_algo(algo) {
+    ds_state.algo = algo;
+    var cards = document.querySelectorAll('.ds-embed [data-algo]');
+    cards.forEach(function(c) {
+      var a = c.getAttribute('data-algo');
+      if (a === 'CUSTOM') return;
+      c.className = a === algo ? 'algo-card selected' : 'algo-card';
+    });
+    ds_render_params();
+  }
+
+  document.querySelectorAll('.ds-embed [data-algo]').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var algo = card.getAttribute('data-algo');
+      if (algo === 'CUSTOM') return; // no-op in widget
+      if (!ds_state.training) ds_select_algo(algo);
+    });
+  });
+
+  // ── Param rows ───────────────────────────────────────────────────
+  function ds_render_params() {
+    var container = document.getElementById('ds_param_rows');
+    container.innerHTML = '';
+    var params = ds_algo_defaults[ds_state.algo] || {};
+    Object.keys(params).forEach(function(k) {
+      var row = document.createElement('div');
+      row.className = 'config-row';
+      var label = document.createElement('span');
+      label.className = 'config-label';
+      label.textContent = k;
+      var val = document.createElement('span');
+      val.className = 'config-value';
+      val.textContent = params[k];
+      row.appendChild(label);
+      row.appendChild(val);
+      container.appendChild(row);
+    });
+  }
+  ds_render_params();
+
+  // ── Arch buttons ─────────────────────────────────────────────────
+  document.querySelectorAll('.ds-embed [data-arch]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (ds_state.training) return;
+      ds_state.arch = btn.getAttribute('data-arch');
+      document.querySelectorAll('.ds-embed [data-arch]').forEach(function(b) {
+        b.className = b.getAttribute('data-arch') === ds_state.arch ? 'arch-btn active' : 'arch-btn';
+      });
+    });
+  });
+
+  // ── Toggles ──────────────────────────────────────────────────────
+  document.querySelectorAll('.ds-embed .toggle').forEach(function(t) {
+    t.addEventListener('click', function() {
+      t.classList.toggle('on');
+    });
+  });
+
+  // ── Env modal ────────────────────────────────────────────────────
+  function ds_build_env_list() {
+    var list = document.getElementById('ds_env_list');
+    list.innerHTML = '';
+    Object.keys(ds_envs).forEach(function(cat) {
+      var header = document.createElement('div');
+      header.style.cssText = 'font-family:\'Press Start 2P\',monospace;font-size:6px;color:#ffaa44;padding:7px 10px;background:#0e1a2e;border-bottom:1px solid #1e3050;cursor:pointer;letter-spacing:0.5px;';
+      header.textContent = ' ' + cat;
+      var body = document.createElement('div');
+      body.style.background = '#070c18';
+      ds_envs[cat].forEach(function(env) {
+        var row = document.createElement('div');
+        row.style.cssText = 'font-family:\'Share Tech Mono\',monospace;font-size:9px;color:#6688aa;padding:5px 18px;cursor:pointer;border-bottom:1px solid #0e1a2e;border-left:2px solid transparent;';
+        row.textContent = env;
+        row.addEventListener('mouseover', function() { row.style.color='#60b8ff'; row.style.background='#0e1a2e'; });
+        row.addEventListener('mouseout', function() { row.style.color='#6688aa'; row.style.background=''; });
+        row.addEventListener('click', function() {
+          document.getElementById('ds_env_input').value = env;
+          list.querySelectorAll('div').forEach(function(r) { r.style.borderLeftColor='transparent'; });
+          row.style.borderLeftColor = '#60b8ff';
+        });
+        body.appendChild(row);
+      });
+      var collapsed = false;
+      header.addEventListener('click', function() {
+        collapsed = !collapsed;
+        body.style.display = collapsed ? 'none' : '';
+        header.textContent = (collapsed ? ' ' : ' ') + cat;
+      });
+      list.appendChild(header);
+      list.appendChild(body);
+    });
+  }
+
+  function ds_open_modal() {
+    ds_build_env_list();
+    document.getElementById('ds_env_input').value = ds_state.env || '';
+    document.getElementById('ds_env_error').textContent = '';
+    var m = document.getElementById('ds_env_modal');
+    m.style.display = 'flex';
+  }
+  function ds_close_modal() {
+    document.getElementById('ds_env_modal').style.display = 'none';
+  }
+
+  document.getElementById('ds_cart_slot').addEventListener('click', ds_open_modal);
+  document.getElementById('ds_modal_close').addEventListener('click', ds_close_modal);
+  document.getElementById('ds_modal_cancel').addEventListener('click', ds_close_modal);
+
+  document.getElementById('ds_modal_confirm').addEventListener('click', function() {
+    var val = (document.getElementById('ds_env_input').value || '').trim();
+    if (!val) { document.getElementById('ds_env_error').textContent = 'ENTER AN ENV ID'; return; }
+    ds_state.env = val;
+    var short = val.toUpperCase().substring(0, 11);
+    document.getElementById('ds_cart_label').textContent = short;
+    document.getElementById('ds_env_display').textContent = ' ' + val;
+    document.getElementById('ds_train_btn').disabled = false;
+    ds_close_modal();
+  });
+
+  // Close modal on backdrop click
+  document.getElementById('ds_env_modal').addEventListener('click', function(e) {
+    if (e.target === this) ds_close_modal();
+  });
+
+  // ── Canvas chart ─────────────────────────────────────────────────
+  var ds_canvas = document.getElementById('ds_chart');
+
+  function ds_draw_chart() {
+    var dpr = window.devicePixelRatio || 1;
+    var rect = ds_canvas.parentElement.getBoundingClientRect();
+    var w = rect.width - 20; // account for padding
+    var h = 108;
+    ds_canvas.width  = w * dpr;
+    ds_canvas.height = h * dpr;
+    ds_canvas.style.width  = w + 'px';
+    ds_canvas.style.height = h + 'px';
+
+    var ctx = ds_canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = '#070c18';
+    ctx.fillRect(0, 0, w, h);
+
+    var rewards = ds_state.rewards;
+    if (rewards.length < 2) return;
+
+    var pad = { l: 28, r: 6, t: 4, b: 18 };
+    var pw = w - pad.l - pad.r;
+    var ph = h - pad.t - pad.b;
+
+    var minR = Math.min.apply(null, rewards);
+    var maxR = Math.max.apply(null, rewards);
+    if (minR === maxR) { maxR = minR + 1; }
+
+    // Grid line
+    ctx.strokeStyle = '#1a2535';
+    ctx.lineWidth = 0.5;
+    for (var gi = 0; gi <= 2; gi++) {
+      var gy = pad.t + (ph / 2) * gi;
+      ctx.beginPath(); ctx.moveTo(pad.l, gy); ctx.lineTo(pad.l + pw, gy); ctx.stroke();
+    }
+
+    // Axes tick labels
+    ctx.fillStyle = '#4a7a9a';
+    ctx.font = '8px "Share Tech Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(maxR.toFixed(1), pad.l - 2, pad.t + 6);
+    ctx.fillText(minR.toFixed(1), pad.l - 2, pad.t + ph);
+    ctx.textAlign = 'center';
+    ctx.fillText('0', pad.l, h - 4);
+    ctx.fillText(ds_state.timestep.toLocaleString(), pad.l + pw, h - 4);
+
+    // Reward line
+    ctx.strokeStyle = '#4a9eff';
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    rewards.forEach(function(r, i) {
+      var x = pad.l + (i / (rewards.length - 1)) * pw;
+      var y = pad.t + ph - ((r - minR) / (maxR - minR)) * ph;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+
+  // ── Simulated training ───────────────────────────────────────────
+  function ds_sim_step() {
+    var t = ds_state.timestep + 2048;
+    ds_state.timestep = t;
+    // Noisy upward trend
+    var prev = ds_state.rewards.length ? ds_state.rewards[ds_state.rewards.length - 1] : 0;
+    var next = prev + (Math.random() - 0.3) * 15;
+    ds_state.rewards.push(next);
+    if (ds_state.rewards.length > 120) ds_state.rewards.shift();
+
+    ds_draw_chart();
+    ds_append_log('[' + String(t).padStart(8, ' ') + '] ep_reward=' + next.toFixed(2));
+  }
+
+  function ds_append_log(line) {
+    var log = document.getElementById('ds_log');
+    var lines = log.textContent ? log.textContent.split('\n') : [];
+    lines.push(line);
+    if (lines.length > 8) lines = lines.slice(-8);
+    log.textContent = lines.join('\n');
+  }
+
+  // ── Train button ─────────────────────────────────────────────────
+  document.getElementById('ds_train_btn').addEventListener('click', function() {
+    if (ds_state.training) {
+      // Stop
+      ds_state.training = false;
+      clearInterval(ds_state.interval);
+      ds_state.interval = null;
+      document.getElementById('ds_train_btn').textContent = ' TRAIN';
+      document.getElementById('ds_train_status').textContent = ' READY';
+      document.getElementById('ds_train_status').className = 'screen-status';
+      document.getElementById('ds_power_led').className = 'power-led';
+      document.getElementById('ds_tb_btn').className = 'face-btn btn-tb';
+      document.getElementById('ds_wb_btn').className = 'shoulder-mini shoulder-wb dimmed';
+    } else {
+      // Start
+      if (!ds_state.env) return;
+      ds_state.training = true;
+      ds_state.rewards = [];
+      ds_state.timestep = 0;
+      document.getElementById('ds_train_btn').textContent = ' STOP';
+      document.getElementById('ds_train_status').textContent = ' TRAINING';
+      document.getElementById('ds_train_status').className = 'screen-status training';
+      document.getElementById('ds_power_led').className = 'power-led training';
+      document.getElementById('ds_tb_btn').className = 'face-btn btn-tb';
+      ds_append_log(' ' + ds_state.algo + ' on ' + ds_state.env + ' (' + ds_state.arch + 'Policy)');
+      ds_state.interval = setInterval(ds_sim_step, 500);
+    }
+  });
+
+  // TB button
+  document.getElementById('ds_tb_btn').addEventListener('click', function() {
+    if (!this.classList.contains('dimmed')) {
+      window.open('http://localhost:6006', '_blank');
+    }
+  });
+
+  // Initial chart draw (empty)
+  ds_draw_chart();
+
+  // Redraw on resize
+  window.addEventListener('resize', function() { if (ds_state.rewards.length) ds_draw_chart(); });
+})();
+</script>
