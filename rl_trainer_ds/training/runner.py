@@ -9,6 +9,7 @@ import stable_baselines3 as sb3
 from stable_baselines3.common.callbacks import BaseCallback
 
 from .wrappers import make_env
+from .custom_loader import CUSTOM_ALGOS
 
 # Module-level training state (single-process Dash dev mode)
 _state = None
@@ -23,6 +24,8 @@ class TrainingState:
     log_lines: List[str] = field(default_factory=list)
     stop_event: threading.Event = field(default_factory=threading.Event)
     tb_log_dir: str = ""
+    custom_env_path: Optional[str] = None
+    custom_algo_path: Optional[str] = None
 
 
 class RewardCallback(BaseCallback):
@@ -53,7 +56,6 @@ _ALGO_MAP = {
     "SAC": sb3.SAC,
     "A2C": sb3.A2C,
     "DQN": sb3.DQN,
-    "TD3": sb3.TD3,
 }
 
 _POLICY_MAP = {
@@ -125,9 +127,26 @@ def start_training(env_id: str, algo_name: str, algo_params: dict,
     def _run():
         try:
             env = make_env(env_id, shaping_config)
-            AlgoClass = _ALGO_MAP[algo_name]
             policy = _POLICY_MAP.get(arch, "MlpPolicy")
-            params = _cast_params(algo_params)
+
+            if algo_name == "CUSTOM":
+                if not CUSTOM_ALGOS:
+                    _state.log_lines.append("[error] no custom algo loaded")
+                    _state.running = False
+                    return
+                class_name = next(iter(CUSTOM_ALGOS))
+                AlgoClass = CUSTOM_ALGOS[class_name]
+                import json
+                raw = algo_params.get("json_params", "{}")
+                try:
+                    params = json.loads(raw) if isinstance(raw, str) else dict(raw)
+                except json.JSONDecodeError as e:
+                    _state.log_lines.append(f"[error] bad JSON params: {e}")
+                    _state.running = False
+                    return
+            else:
+                AlgoClass = _ALGO_MAP[algo_name]
+                params = _cast_params(algo_params)
 
             if policy == "MlpLstmPolicy":
                 try:

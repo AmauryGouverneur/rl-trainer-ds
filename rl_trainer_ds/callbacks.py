@@ -176,28 +176,67 @@ def select_env_row(clicks, lib_state):
 
 @app.callback(
     *[Output(f"algo-card-{name}", "className") for name, _ in ALGOS],
+    Output("algo-card-CUSTOM", "className"),
     Output("algo-store", "data"),
     Output("param-rows", "children"),
+    Output("custom-algo-modal", "style", allow_duplicate=True),
     *[Input(f"algo-card-{name}", "n_clicks") for name, _ in ALGOS],
+    Input("algo-card-CUSTOM", "n_clicks"),
     State("algo-store", "data"),
+    State("custom-algo-store", "data"),
     prevent_initial_call=True,
 )
 def select_algo(*args):
+    from dash import html, dcc as _dcc
     n_algos = len(ALGOS)
-    clicks = args[:n_algos]
-    algo_data = args[n_algos]
+    # args: n_algos built-in clicks + 1 custom click + algo_data + custom_algo_data
+    clicks = args[:n_algos + 1]
+    algo_data = args[n_algos + 1]
+    custom_algo_data = args[n_algos + 2]
 
     triggered = ctx.triggered_id
+    modal_style = no_update
+
+    if triggered == "algo-card-CUSTOM":
+        # Open the custom algo modal regardless of loaded state
+        modal_style = {"display": "flex"}
+        # Don't change selection yet — wait for confirm
+        cur_algo = (algo_data or {}).get("algo", "PPO")
+        builtin_classes = [
+            "algo-card selected" if name == cur_algo else "algo-card"
+            for name, _ in ALGOS
+        ]
+        custom_cls = _custom_algo_card_class(custom_algo_data, cur_algo == "CUSTOM")
+        return *builtin_classes, custom_cls, no_update, no_update, modal_style
+
     if not triggered or not triggered.startswith("algo-card-"):
-        return *["algo-card"] * n_algos, no_update, no_update
+        cur_algo = (algo_data or {}).get("algo", "PPO")
+        builtin_classes = ["algo-card selected" if name == cur_algo else "algo-card"
+                           for name, _ in ALGOS]
+        custom_cls = _custom_algo_card_class(custom_algo_data, cur_algo == "CUSTOM")
+        return *builtin_classes, custom_cls, no_update, no_update, modal_style
 
     selected = triggered.replace("algo-card-", "")
-    classes = [
+    builtin_classes = [
         "algo-card selected" if name == selected else "algo-card"
         for name, _ in ALGOS
     ]
+    custom_cls = _custom_algo_card_class(custom_algo_data, False)
     new_params = ALGO_DEFAULTS.get(selected, {})
-    return *classes, {"algo": selected, "params": new_params}, _param_rows(selected, new_params)
+    return (*builtin_classes, custom_cls,
+            {"algo": selected, "params": new_params},
+            _param_rows(selected, new_params),
+            modal_style)
+
+
+def _custom_algo_card_class(custom_algo_data, selected: bool) -> str:
+    loaded = bool((custom_algo_data or {}).get("class_name"))
+    parts = ["algo-card-custom"]
+    if selected:
+        parts.append("selected")
+    elif not loaded:
+        parts.append("dimmed")
+    return " ".join(parts)
 
 
 @app.callback(
@@ -437,3 +476,159 @@ def update_chart(n):
     timesteps = list(state.timesteps)    # full history from timestep 0
     log_text = "\n".join(state.log_lines[-8:])
     return _make_chart(rewards, timesteps), log_text
+
+
+# ── Custom env modal ──────────────────────────────────────────────────
+
+@app.callback(
+    Output("custom-env-modal", "style"),
+    Output("custom-env-feedback", "children"),
+    Output("custom-env-success", "children"),
+    Output("custom-env-confirm-btn", "disabled"),
+    Output("custom-env-confirm-btn", "style"),
+    Input("custom-cart-slot", "n_clicks"),
+    Input("custom-env-modal-cancel", "n_clicks"),
+    Input("custom-env-modal-cancel-bottom", "n_clicks"),
+    Input("custom-env-confirm-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def toggle_custom_env_modal(open_c, cancel1, cancel2, confirm_c):
+    triggered = ctx.triggered_id
+    hidden = {"display": "none"}
+    visible = {"display": "flex"}
+    btn_disabled = {"opacity": "0.4"}
+    btn_enabled = {"opacity": "1"}
+
+    if triggered == "custom-cart-slot":
+        return visible, "", "", True, btn_disabled
+    if triggered in ("custom-env-modal-cancel", "custom-env-modal-cancel-bottom"):
+        return hidden, "", "", True, btn_disabled
+    if triggered == "custom-env-confirm-btn":
+        return hidden, "", "", True, btn_disabled
+    return no_update, no_update, no_update, no_update, no_update
+
+
+@app.callback(
+    Output("custom-env-feedback", "children", allow_duplicate=True),
+    Output("custom-env-success", "children", allow_duplicate=True),
+    Output("custom-env-confirm-btn", "disabled", allow_duplicate=True),
+    Output("custom-env-confirm-btn", "style", allow_duplicate=True),
+    Output("custom-env-store", "data", allow_duplicate=True),
+    Input("custom-env-load-btn", "n_clicks"),
+    State("custom-env-filepath", "value"),
+    prevent_initial_call=True,
+)
+def load_custom_env_btn(n_clicks, filepath):
+    from .training.custom_loader import load_custom_env
+    fp = (filepath or "").strip()
+    if not fp:
+        return "ENTER A FILE PATH", "", True, {"opacity": "0.4"}, no_update
+    try:
+        class_name, env_id = load_custom_env(fp)
+    except Exception as exc:
+        return str(exc)[:80].upper(), "", True, {"opacity": "0.4"}, no_update
+    success_msg = f"✓ {class_name}  →  {env_id}"
+    return "", success_msg, False, {"opacity": "1"}, {"class_name": class_name, "env_id": env_id, "filepath": fp}
+
+
+@app.callback(
+    Output("custom-cart-label", "children"),
+    Output("env-store", "data", allow_duplicate=True),
+    Output("train-btn", "disabled", allow_duplicate=True),
+    Output("env-display", "children", allow_duplicate=True),
+    Input("custom-env-confirm-btn", "n_clicks"),
+    State("custom-env-store", "data"),
+    prevent_initial_call=True,
+)
+def confirm_custom_env(n_clicks, custom_env_data):
+    if not custom_env_data or not custom_env_data.get("env_id"):
+        return no_update, no_update, no_update, no_update
+    env_id = custom_env_data["env_id"]
+    class_name = custom_env_data["class_name"]
+    label = _truncate_cart(class_name, 12)
+    return label, {"env_id": env_id}, False, f"▶ {env_id}"
+
+
+# ── Custom algo modal ─────────────────────────────────────────────────
+
+@app.callback(
+    Output("custom-algo-modal", "style"),
+    Output("custom-algo-feedback", "children"),
+    Output("custom-algo-success", "children"),
+    Output("custom-algo-confirm-btn", "disabled"),
+    Output("custom-algo-confirm-btn", "style"),
+    Input("custom-algo-modal-cancel", "n_clicks"),
+    Input("custom-algo-modal-cancel-bottom", "n_clicks"),
+    Input("custom-algo-confirm-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
+def close_custom_algo_modal(cancel1, cancel2, confirm_c):
+    triggered = ctx.triggered_id
+    hidden = {"display": "none"}
+    btn_disabled = {"opacity": "0.4"}
+
+    if triggered in ("custom-algo-modal-cancel", "custom-algo-modal-cancel-bottom",
+                     "custom-algo-confirm-btn"):
+        return hidden, "", "", True, btn_disabled
+    return no_update, no_update, no_update, no_update, no_update
+
+
+@app.callback(
+    Output("custom-algo-feedback", "children", allow_duplicate=True),
+    Output("custom-algo-success", "children", allow_duplicate=True),
+    Output("custom-algo-confirm-btn", "disabled", allow_duplicate=True),
+    Output("custom-algo-confirm-btn", "style", allow_duplicate=True),
+    Output("custom-algo-store", "data", allow_duplicate=True),
+    Input("custom-algo-load-btn", "n_clicks"),
+    State("custom-algo-filepath", "value"),
+    prevent_initial_call=True,
+)
+def load_custom_algo_btn(n_clicks, filepath):
+    from .training.custom_loader import load_custom_algo
+    fp = (filepath or "").strip()
+    if not fp:
+        return "ENTER A FILE PATH", "", True, {"opacity": "0.4"}, no_update
+    try:
+        class_name, _ = load_custom_algo(fp)
+    except Exception as exc:
+        return str(exc)[:80].upper(), "", True, {"opacity": "0.4"}, no_update
+    success_msg = f"✓ {class_name} loaded"
+    return "", success_msg, False, {"opacity": "1"}, {"class_name": class_name, "filepath": fp}
+
+
+@app.callback(
+    Output("custom-algo-card-name", "children"),
+    Output("custom-algo-card-type", "children"),
+    Output("algo-card-CUSTOM", "className", allow_duplicate=True),
+    Output("algo-store", "data", allow_duplicate=True),
+    Output("param-rows", "children", allow_duplicate=True),
+    Input("custom-algo-confirm-btn", "n_clicks"),
+    State("custom-algo-store", "data"),
+    State("algo-store", "data"),
+    prevent_initial_call=True,
+)
+def confirm_custom_algo(n_clicks, custom_algo_data, algo_data):
+    from dash import html, dcc as _dcc
+    if not custom_algo_data or not custom_algo_data.get("class_name"):
+        return no_update, no_update, no_update, no_update, no_update
+
+    class_name = custom_algo_data["class_name"]
+    truncated = class_name[:6].upper() if len(class_name) > 6 else class_name.upper()
+
+    # JSON param input for custom algos
+    param_rows = [
+        html.Div(className="config-row", children=[
+            html.Span("params", className="config-label"),
+            _dcc.Input(
+                id={"type": "param-input", "key": "json_params"},
+                type="text",
+                value='{"learning_rate": 3e-4, "gamma": 0.99}',
+                className="param-input",
+                debounce=True,
+                style={"width": "100%", "textAlign": "left"},
+            ),
+        ]),
+    ]
+
+    new_algo_data = {"algo": "CUSTOM", "params": {"json_params": '{"learning_rate": 3e-4, "gamma": 0.99}'}}
+    return truncated, class_name[:10], "algo-card-custom selected", new_algo_data, param_rows

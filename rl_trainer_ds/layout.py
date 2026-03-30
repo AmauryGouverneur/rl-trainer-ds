@@ -13,7 +13,6 @@ ALGOS = [
     ("SAC", "off-pol"),
     ("A2C", "on-policy"),
     ("DQN", "off-pol"),
-    ("TD3", "off-pol"),
 ]
 
 ALGO_DEFAULTS = {
@@ -21,7 +20,6 @@ ALGO_DEFAULTS = {
     "SAC": {"learning_rate": "3e-4", "buffer_size": "1000000", "batch_size": "256", "gamma": "0.99", "tau": "0.005"},
     "A2C": {"learning_rate": "7e-4", "n_steps": "5", "gamma": "0.99"},
     "DQN": {"learning_rate": "1e-4", "buffer_size": "1000000", "batch_size": "32", "gamma": "0.99"},
-    "TD3": {"learning_rate": "1e-3", "buffer_size": "1000000", "batch_size": "100", "gamma": "0.99", "tau": "0.005"},
 }
 
 
@@ -84,6 +82,9 @@ def build_layout():
         dcc.Store(id="training-active", data=False),
         dcc.Interval(id="chart-interval", interval=500, disabled=True),
         dcc.Store(id="lib-state", data={"collapsed": {}, "selected": ""}),
+        # Custom loader stores
+        dcc.Store(id="custom-env-store", data={}),   # {class_name, env_id, filepath}
+        dcc.Store(id="custom-algo-store", data={}),  # {class_name, filepath}
 
         # ── DS Body ─────────────────────────────────────────────────
         html.Div(style={"position": "relative"}, children=[
@@ -111,18 +112,32 @@ def build_layout():
                                 html.Span(id="env-display", children="▶ no cartridge",
                                           className="screen-status"),
                             ]),
-                            # Algo grid
+                            # Algo grid (5 built-in + 1 custom)
                             html.Div(className="algo-grid", children=[
+                                *[
+                                    html.Div(
+                                        id=f"algo-card-{name}",
+                                        className="algo-card" + (" selected" if name == "PPO" else ""),
+                                        n_clicks=0,
+                                        children=[
+                                            html.Span(name, className="algo-name"),
+                                            html.Span(label, className="algo-type"),
+                                        ]
+                                    )
+                                    for name, label in ALGOS
+                                ],
+                                # Custom algo card
                                 html.Div(
-                                    id=f"algo-card-{name}",
-                                    className="algo-card" + (" selected" if name == "PPO" else ""),
+                                    id="algo-card-CUSTOM",
+                                    className="algo-card-custom dimmed",
                                     n_clicks=0,
                                     children=[
-                                        html.Span(name, className="algo-name"),
-                                        html.Span(label, className="algo-type"),
-                                    ]
-                                )
-                                for name, label in ALGOS
+                                        html.Span(id="custom-algo-card-name",
+                                                  children="+ CUST", className="algo-name-custom"),
+                                        html.Span(id="custom-algo-card-type",
+                                                  children="user algo", className="algo-type-custom"),
+                                    ],
+                                ),
                             ]),
                             # Reward chart
                             html.Div(className="chart-area", children=[
@@ -255,8 +270,9 @@ def build_layout():
                         ]),
                     ]),
 
-                    # Cartridge slot
+                    # Cartridge slots (standard + custom)
                     html.Div(className="cartridge-area", children=[
+                        # Standard cartridge
                         html.Div(
                             className="cartridge-slot",
                             id="cartridge-slot",
@@ -266,6 +282,21 @@ def build_layout():
                                 html.Div(className="cartridge-inserted", children=[
                                     html.Span(id="cart-label", className="cartridge-label",
                                               children="NO CART"),
+                                ]),
+                            ],
+                        ),
+                        # Custom env cartridge
+                        html.Div(
+                            className="cartridge-slot cartridge-slot-custom",
+                            id="custom-cart-slot",
+                            n_clicks=0,
+                            title="Click to load custom .py environment",
+                            children=[
+                                html.Div(className="cartridge-inserted cartridge-inserted-custom",
+                                         children=[
+                                    html.Span(id="custom-cart-label",
+                                              className="cartridge-label cartridge-label-custom",
+                                              children="CUSTOM"),
                                 ]),
                             ],
                         ),
@@ -335,6 +366,80 @@ def build_layout():
                             html.Button("CONFIRM", id="modal-confirm", n_clicks=0,
                                         className="modal-btn modal-btn-confirm"),
                         ]),
+                    ]),
+                ]),
+            ],
+        ),
+
+        # ── Custom env modal ─────────────────────────────────────────
+        html.Div(
+            id="custom-env-modal",
+            style={"display": "none"},
+            className="modal-overlay",
+            children=[
+                html.Div(className="modal-box modal-box-custom", children=[
+                    html.Div(className="modal-header-row", children=[
+                        html.Div("LOAD CUSTOM ENV", className="modal-title modal-title-custom"),
+                        html.Button("×", id="custom-env-modal-cancel", n_clicks=0,
+                                    className="modal-close-btn"),
+                    ]),
+                    dcc.Input(
+                        id="custom-env-filepath",
+                        type="text",
+                        placeholder="/absolute/path/to/env.py",
+                        className="modal-input modal-input-custom",
+                        debounce=False,
+                        value="",
+                        style={"marginBottom": "6px"},
+                    ),
+                    html.Div(id="custom-env-feedback", className="modal-error", children=""),
+                    html.Div(id="custom-env-success", className="modal-success", children=""),
+                    html.Div(className="modal-buttons", children=[
+                        html.Button("CANCEL", id="custom-env-modal-cancel-bottom", n_clicks=0,
+                                    className="modal-btn modal-btn-cancel"),
+                        html.Button("LOAD", id="custom-env-load-btn", n_clicks=0,
+                                    className="modal-btn modal-btn-confirm-custom"),
+                        html.Button("CONFIRM", id="custom-env-confirm-btn", n_clicks=0,
+                                    className="modal-btn modal-btn-confirm-custom",
+                                    disabled=True,
+                                    style={"opacity": "0.4"}),
+                    ]),
+                ]),
+            ],
+        ),
+
+        # ── Custom algo modal ────────────────────────────────────────
+        html.Div(
+            id="custom-algo-modal",
+            style={"display": "none"},
+            className="modal-overlay",
+            children=[
+                html.Div(className="modal-box modal-box-custom", children=[
+                    html.Div(className="modal-header-row", children=[
+                        html.Div("LOAD CUSTOM ALGO", className="modal-title modal-title-custom"),
+                        html.Button("×", id="custom-algo-modal-cancel", n_clicks=0,
+                                    className="modal-close-btn"),
+                    ]),
+                    dcc.Input(
+                        id="custom-algo-filepath",
+                        type="text",
+                        placeholder="/absolute/path/to/algo.py",
+                        className="modal-input modal-input-custom",
+                        debounce=False,
+                        value="",
+                        style={"marginBottom": "6px"},
+                    ),
+                    html.Div(id="custom-algo-feedback", className="modal-error", children=""),
+                    html.Div(id="custom-algo-success", className="modal-success", children=""),
+                    html.Div(className="modal-buttons", children=[
+                        html.Button("CANCEL", id="custom-algo-modal-cancel-bottom", n_clicks=0,
+                                    className="modal-btn modal-btn-cancel"),
+                        html.Button("LOAD", id="custom-algo-load-btn", n_clicks=0,
+                                    className="modal-btn modal-btn-confirm-custom"),
+                        html.Button("CONFIRM", id="custom-algo-confirm-btn", n_clicks=0,
+                                    className="modal-btn modal-btn-confirm-custom",
+                                    disabled=True,
+                                    style={"opacity": "0.4"}),
                     ]),
                 ]),
             ],

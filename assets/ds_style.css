@@ -388,7 +388,7 @@ body {
 .train-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Cartridge */
-.cartridge-area { display: flex; justify-content: center; padding: 0 0 8px; }
+.cartridge-area { display: flex; justify-content: center; gap: 8px; padding: 0 0 8px; }
 .cartridge-slot {
   width: 70px; height: 18px;
   background: #0d0d14;
@@ -412,6 +412,48 @@ body {
   white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; max-width: 64px;
 }
+
+/* Custom (purple) cartridge slot */
+.cartridge-slot-custom { border-color: #4a2a6a; }
+.cartridge-slot-custom:hover { border-color: #aa66ff; }
+.cartridge-inserted-custom {
+  width: 60px; height: 13px;
+  background: #1a0a2a;
+  border-radius: 2px 2px 5px 5px;
+  border: 1px solid #4a2a6a;
+  display: flex; align-items: center; justify-content: center;
+}
+.cartridge-label-custom { color: #bb88ff; }
+
+/* Custom modal (purple accent) */
+.modal-box-custom { border-color: #aa66ff; }
+.modal-title-custom { color: #bb88ff; }
+.modal-input-custom { border-color: #4a2a6a; }
+.modal-input-custom:focus { border-color: #aa66ff; }
+.modal-btn-confirm-custom {
+  background: #1a0a2a; border-color: #6a3a9a; color: #bb88ff;
+}
+.modal-success { font-size: 7px; color: #66ee66; min-height: 14px; margin-bottom: 6px;
+  font-family: 'Press Start 2P', monospace; }
+
+/* Custom algo card (purple) */
+.algo-card-custom {
+  background: #1a0a2a;
+  border: 1px solid #4a2a6a;
+  border-radius: 3px;
+  padding: 5px 3px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.algo-card-custom.selected { background: #2a0a4a; border-color: #aa66ff; }
+.algo-card-custom.dimmed { opacity: 0.4; }
+.algo-name-custom {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px; color: #bb88ff;
+  display: block; margin-bottom: 3px;
+}
+.algo-type-custom { font-size: 7px; color: #7a5a9a; }
 
 /* ── Modal overlay ── */
 .modal-overlay {
